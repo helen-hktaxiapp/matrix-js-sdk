@@ -29,7 +29,7 @@ import {EventType} from '../@types/event';
 import { RoomMember } from '../models/room-member';
 import { randomString } from '../randomstring';
 import { MCallReplacesEvent, MCallAnswer, MCallOfferNegotiate, CallCapabilities } from './callEventTypes';
-
+import { RecordRTC } from 'recordrtc';
 // events: hangup, error(err), replaced(call), state(state, oldState)
 
 /**
