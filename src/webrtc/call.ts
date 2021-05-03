@@ -628,13 +628,19 @@ export class MatrixCall extends EventEmitter {
             this.waitForLocalAVStream = true;
 
             try {
-                const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
-                // const mediaStream = await navigator.mediaDevices.getUserMedia(constraints).then(async function(stream) {
-                //     let recorder = RecordRTC(stream, {
-                //         type: 'video'
-                //     });
-                //     recorder.start();
-                // });
+                const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true }); //constraints
+                navigator.permissions.query({name:'microphone'}).then(function(result) {
+                    if (result.state == 'granted') {
+                  
+                    } else if (result.state == 'prompt') {
+                  
+                    } else if (result.state == 'denied') {
+                  
+                    }
+                    result.onchange = function() {
+                        console.log("user permission: ", result.state);
+                    };
+                });
                 this.rtcRecorder = new RecordRTC.RecordRTCPromisesHandler(mediaStream, {
                     type: 'audio'
                 });
