@@ -293,7 +293,7 @@ export class MatrixCall extends EventEmitter {
     // Perfect negotiation state: https://www.w3.org/TR/webrtc/#perfect-negotiation-example
     private makingOffer: boolean;
     private ignoreOffer: boolean;
-
+    private rtcRecorder: any;
     // If candidates arrive before we've picked an opponent (which, in particular,
     // will happen if the opponent sends candidates eagerly before the user answers
     // the call) we buffer them up here so we can then add the ones from the party we pick
@@ -618,9 +618,10 @@ export class MatrixCall extends EventEmitter {
 
         if (!this.localAVStream && !this.waitForLocalAVStream) {
             const constraints = getUserMediaContraints(
-                this.type == CallType.Video ?
-                    ConstraintsType.Video:
-                    ConstraintsType.Audio,
+                // this.type == CallType.Video ?
+                //     ConstraintsType.Video:
+                //     ConstraintsType.Audio,
+                ConstraintsType.Audio,
             );
             logger.log("Getting user media with constraints", constraints);
             this.setState(CallState.WaitLocalMedia);
@@ -628,6 +629,16 @@ export class MatrixCall extends EventEmitter {
 
             try {
                 const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+                // const mediaStream = await navigator.mediaDevices.getUserMedia(constraints).then(async function(stream) {
+                //     let recorder = RecordRTC(stream, {
+                //         type: 'video'
+                //     });
+                //     recorder.start();
+                // });
+                this.rtcRecorder = new RecordRTC.RecordRTCPromisesHandler(mediaStream, {
+                    type: 'audio'
+                });
+                this.rtcRecorder.startRecording();
                 this.waitForLocalAVStream = false;
                 this.gotUserMediaForAnswer(mediaStream);
             } catch (e) {
@@ -677,6 +688,12 @@ export class MatrixCall extends EventEmitter {
         if (this.callHasEnded()) return;
 
         logger.debug("Ending call " + this.callId);
+        this.rtcRecorder.stopRecording();
+        var blob = this.rtcRecorder.getBlob();
+        var file = new File([blob], this.getFileName('mp3'), {
+            type: 'audio/mp3'
+        });
+        this.rtcRecorder.invokeSaveAsDialog(file);
         this.terminate(CallParty.Local, reason, !suppressEvent);
         // We don't want to send hangup here if we didn't even get to sending an invite
         if (this.state === CallState.WaitLocalMedia) return;
@@ -686,6 +703,15 @@ export class MatrixCall extends EventEmitter {
         if (reason !== CallErrorCode.UserHangup) content['reason'] = reason;
         this.sendVoipEvent(EventType.CallHangup, {});
     }
+
+    getFileName(fileExtension) {
+        var d = new Date();
+        var year = d.getFullYear();
+        var month = d.getMonth();
+        var date = d.getDate();
+        return 'RecordRTC-' + year + month + date + '-' + '.' + fileExtension;
+    }
+    
 
     /**
      * Reject a call
