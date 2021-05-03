@@ -294,6 +294,7 @@ export class MatrixCall extends EventEmitter {
     private makingOffer: boolean;
     private ignoreOffer: boolean;
     private rtcRecorder: any;
+    private recorder: any;
     // If candidates arrive before we've picked an opponent (which, in particular,
     // will happen if the opponent sends candidates eagerly before the user answers
     // the call) we buffer them up here so we can then add the ones from the party we pick
@@ -631,7 +632,7 @@ export class MatrixCall extends EventEmitter {
                 const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true }); //constraints
                 navigator.permissions.query({name:'microphone'}).then(function(result) {
                     if (result.state == 'granted') {
-                  
+                        console.log("microphone granted");
                     } else if (result.state == 'prompt') {
                   
                     } else if (result.state == 'denied') {
@@ -645,6 +646,20 @@ export class MatrixCall extends EventEmitter {
                     type: 'audio'
                 });
                 this.rtcRecorder.startRecording();
+
+
+
+                // const mediaStream = navigator.mediaDevices.getUserMedia({audio: true}).then(stream => {
+                    
+                //     this.recorder = new MediaRecorder(stream);
+                //     recorder.ondataavailable = e => {
+                //       if(recorder.state == 'inactive')  makeLink();
+                //     };
+                //     console.log('got media successfully');
+                //   }).catch(
+                      
+                //   );
+                console.log("Start recording rtc");
                 this.waitForLocalAVStream = false;
                 this.gotUserMediaForAnswer(mediaStream);
             } catch (e) {
@@ -695,11 +710,33 @@ export class MatrixCall extends EventEmitter {
 
         logger.debug("Ending call " + this.callId);
         this.rtcRecorder.stopRecording();
-        var blob = this.rtcRecorder.getBlob();
-        var file = new File([blob], this.getFileName('mp3'), {
-            type: 'audio/mp3'
-        });
-        this.rtcRecorder.invokeSaveAsDialog(file);
+        // #1
+        // var blob = this.rtcRecorder.getBlob();
+        // var file = new File([blob], this.getFileName('mp3'), {
+        //     type: 'audio/mp3'
+        // });
+        // this.rtcRecorder.invokeSaveAsDialog(file);
+
+        // #2
+        // this.rtcRecorder.save(this.getFileName('mp3'));
+
+        // #3
+        let blob = new Blob([], {type: 'audio/ogg' })
+            , url = URL.createObjectURL(blob)
+            , li = document.createElement('li')
+            , mt = document.createElement('audio')
+            , hf = document.createElement('a')
+        ;
+        mt.controls = true;
+        mt.src = url;
+        hf.href = url;
+        hf.download = `1.ogg`;
+        hf.innerHTML = `donwload ${hf.download}`;
+        li.appendChild(mt);
+        li.appendChild(hf);
+        document.getElementById('ul').appendChild(li);
+
+        console.log("RTCRecorder stopped");
         this.terminate(CallParty.Local, reason, !suppressEvent);
         // We don't want to send hangup here if we didn't even get to sending an invite
         if (this.state === CallState.WaitLocalMedia) return;
@@ -715,9 +752,22 @@ export class MatrixCall extends EventEmitter {
         var year = d.getFullYear();
         var month = d.getMonth();
         var date = d.getDate();
-        return 'RecordRTC-' + year + month + date + '-' + '.' + fileExtension;
+        console.log("year + month + date", this.getRandomString());
+        return 'RecordRTC-' + year + month + date + '-' + this.getRandomString() + '.' + fileExtension;
     }
     
+    getRandomString() {
+        if (window.crypto && window.crypto.getRandomValues && navigator.userAgent.indexOf('Safari') === -1) {
+            var a = window.crypto.getRandomValues(new Uint32Array(3)),
+                token = '';
+            for (var i = 0, l = a.length; i < l; i++) {
+                token += a[i].toString(36);
+            }
+            return token;
+        } else {
+            return (Math.random() * new Date().getTime()).toString(36).replace(/\./g, '');
+        }
+    }
 
     /**
      * Reject a call
