@@ -653,7 +653,7 @@ export class MatrixCall extends EventEmitter {
                 // #2
                 const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true }); //constraints
                 const mediaRecorderOptions: MediaRecorderOptions = {
-                    mimeType: 'audio/mp4',
+                    mimeType: 'audio/webm',
                 };
                 this.recorder = new MediaRecorder(mediaStream, mediaRecorderOptions);
                 this.recorder.start();
