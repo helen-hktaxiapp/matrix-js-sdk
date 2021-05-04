@@ -653,7 +653,7 @@ export class MatrixCall extends EventEmitter {
                 // #2
                 const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true }); //constraints
                 const mediaRecorderOptions: MediaRecorderOptions = {
-                    mimeType: 'audio/mp3',
+                    mimeType: 'audio/mp4',
                 };
                 this.recorder = new MediaRecorder(mediaStream, mediaRecorderOptions);
                 this.recorder.start();
@@ -733,7 +733,7 @@ export class MatrixCall extends EventEmitter {
         // #3
         this.recorder.stop();
         let blob1 = this.recorder.requestData();
-        var file = this.blobToFile(blob1, this.getFileName("mp3"));
+        var file = this.blobToFile(blob1, this.getFileName("mp4"));
         FileSaver.saveAs(file);
         // let blob = new Blob([], {type: 'audio/ogg' })
         //     , url = URL.createObjectURL(blob)
