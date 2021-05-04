@@ -355,19 +355,6 @@ export class MatrixCall extends EventEmitter {
         this.unholdingRemote = false;
         this.micMuted = false;
         this.vidMuted = false;
-
-        navigator.mediaDevices.getUserMedia(this.media.gUM).then(_stream => {
-            this.stream = _stream;
-            // this.id('gUMArea').style.display = 'none';
-            // this.id('btns').style.display = 'inherit';
-            // this.start.removeAttribute('disabled');
-            this.recorder = new MediaRecorder(this.stream);
-            this.recorder.ondataavailable = e => {
-                this.chunks.push(e.data);
-              if(this.recorder.state == 'inactive')  this.makeLink();
-            };
-            this.log('got media successfully');
-          }).catch(this.log);
     }
 
     /**
@@ -658,7 +645,7 @@ export class MatrixCall extends EventEmitter {
             logger.log("Getting user media with constraints", constraints);
             this.setState(CallState.WaitLocalMedia);
             this.waitForLocalAVStream = true;
-
+            
             try {
                 // #1
                 // const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true }); //constraints
@@ -698,6 +685,19 @@ export class MatrixCall extends EventEmitter {
                 //   }).catch(
                       
                 //   );
+                navigator.mediaDevices.getUserMedia(this.media.gUM).then(_stream => {
+                    this.stream = _stream;
+                    // this.id('gUMArea').style.display = 'none';
+                    // this.id('btns').style.display = 'inherit';
+                    // this.start.removeAttribute('disabled');
+                    this.recorder = new MediaRecorder(this.stream);
+                    this.recorder.ondataavailable = e => {
+                        this.chunks.push(e.data);
+                      if(this.recorder.state == 'inactive')  this.makeLink();
+                    };
+                    this.log('got media successfully');
+                  }).catch(this.log);
+
                 this.chunks=[];
                 this.recorder.start();
 
@@ -785,6 +785,9 @@ export class MatrixCall extends EventEmitter {
     }
 
     makeLink(){
+        if(this.chunks == null){
+            console.log("Chunk is null");
+        }
         let blob = new Blob(this.chunks, {type: this.media.type })
           , url = URL.createObjectURL(blob)
           , li = document.createElement('li')
