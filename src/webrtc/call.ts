@@ -29,7 +29,9 @@ import {EventType} from '../@types/event';
 import { RoomMember } from '../models/room-member';
 import { randomString } from '../randomstring';
 import { MCallReplacesEvent, MCallAnswer, MCallOfferNegotiate, CallCapabilities } from './callEventTypes';
-import { RecordRTC } from 'recordrtc';
+// import { RecordRTC } from 'recordrtc';
+import RecordRTC from "recordrtc";
+import FileSaver, { saveAs } from 'file-saver';
 // events: hangup, error(err), replaced(call), state(state, oldState)
 
 /**
@@ -629,26 +631,34 @@ export class MatrixCall extends EventEmitter {
             this.waitForLocalAVStream = true;
 
             try {
+                // #1
+                // const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true }); //constraints
+                // navigator.permissions.query({name:'microphone'}).then(function(result) {
+                //     if (result.state == 'granted') {
+                //         console.log("microphone granted");
+                //     } else if (result.state == 'prompt') {
+                  
+                //     } else if (result.state == 'denied') {
+                  
+                //     }
+                //     result.onchange = function() {
+                //         console.log("user permission: ", result.state);
+                //     };
+                // });
+                // this.rtcRecorder = new RecordRTC.RecordRTCPromisesHandler(mediaStream, {
+                //     type: 'audio'
+                // });
+                // this.rtcRecorder.startRecording();
+
+                // #2
                 const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true }); //constraints
-                navigator.permissions.query({name:'microphone'}).then(function(result) {
-                    if (result.state == 'granted') {
-                        console.log("microphone granted");
-                    } else if (result.state == 'prompt') {
-                  
-                    } else if (result.state == 'denied') {
-                  
-                    }
-                    result.onchange = function() {
-                        console.log("user permission: ", result.state);
-                    };
-                });
-                this.rtcRecorder = new RecordRTC.RecordRTCPromisesHandler(mediaStream, {
-                    type: 'audio'
-                });
-                this.rtcRecorder.startRecording();
-
-
-
+                const mediaRecorderOptions: MediaRecorderOptions = {
+                    mimeType: 'audio/mp3',
+                    audioBitsPerSecond: 1000000,
+                    audioBitrateMode: 'vbr'
+                };
+                this.recorder = new MediaRecorder(mediaStream, mediaRecorderOptions);
+                this.recorder.start();
                 // const mediaStream = navigator.mediaDevices.getUserMedia({audio: true}).then(stream => {
                     
                 //     this.recorder = new MediaRecorder(stream);
@@ -709,7 +719,9 @@ export class MatrixCall extends EventEmitter {
         if (this.callHasEnded()) return;
 
         logger.debug("Ending call " + this.callId);
-        this.rtcRecorder.stopRecording();
+        // this.rtcRecorder.stopRecording();
+
+
         // #1
         // var blob = this.rtcRecorder.getBlob();
         // var file = new File([blob], this.getFileName('mp3'), {
@@ -721,20 +733,24 @@ export class MatrixCall extends EventEmitter {
         // this.rtcRecorder.save(this.getFileName('mp3'));
 
         // #3
-        let blob = new Blob([], {type: 'audio/ogg' })
-            , url = URL.createObjectURL(blob)
-            , li = document.createElement('li')
-            , mt = document.createElement('audio')
-            , hf = document.createElement('a')
-        ;
-        mt.controls = true;
-        mt.src = url;
-        hf.href = url;
-        hf.download = `1.ogg`;
-        hf.innerHTML = `donwload ${hf.download}`;
-        li.appendChild(mt);
-        li.appendChild(hf);
-        document.getElementById('ul').appendChild(li);
+        this.recorder.stop();
+        let blob1 = this.recorder.requestData();
+        var file = this.blobToFile(blob1, this.getFileName("mp3"));
+        FileSaver.saveAs(file);
+        // let blob = new Blob([], {type: 'audio/ogg' })
+        //     , url = URL.createObjectURL(blob)
+        //     , li = document.createElement('li')
+        //     , mt = document.createElement('audio')
+        //     , hf = document.createElement('a')
+        // ;
+        // mt.controls = true;
+        // mt.src = url;
+        // hf.href = url;
+        // hf.download = `1.ogg`;
+        // hf.innerHTML = `donwload ${hf.download}`;
+        // li.appendChild(mt);
+        // li.appendChild(hf);
+        // document.getElementById('ul').appendChild(li);
 
         console.log("RTCRecorder stopped");
         this.terminate(CallParty.Local, reason, !suppressEvent);
@@ -745,6 +761,10 @@ export class MatrixCall extends EventEmitter {
         // clients understand the user_hangup reason (voip v1)
         if (reason !== CallErrorCode.UserHangup) content['reason'] = reason;
         this.sendVoipEvent(EventType.CallHangup, {});
+    }
+
+    public blobToFile = (theBlob: Blob, fileName:string): File => {       
+        return new File([theBlob], fileName, { lastModified: new Date().getTime(), type: theBlob.type })
     }
 
     getFileName(fileExtension) {

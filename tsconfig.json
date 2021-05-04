@@ -12,8 +12,8 @@
     "declaration": true,
     "allowJs": true,
     "types": [
-      "node"
-    ]
+      "node", "dom-mediacapture-record"
+    ],
   },
   "include": [
     "./src/**/*.ts"

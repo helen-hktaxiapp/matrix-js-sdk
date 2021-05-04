@@ -1217,6 +1217,11 @@
   "resolved" "https://registry.npmjs.org/@types/dom-mediacapture-record/-/dom-mediacapture-record-1.0.7.tgz"
   "version" "1.0.7"
 
+"@types/file-saver@^2.0.2":
+  "integrity" "sha512-xbqnZmGrCEqi/KUzOkeUSe77p7APvLuyellGaAoeww3CHJ1AbjQWjPSCFtKIzZn8L7LpEax4NXnC+gfa6nM7IA=="
+  "resolved" "https://registry.npmjs.org/@types/file-saver/-/file-saver-2.0.2.tgz"
+  "version" "2.0.2"
+
 "@types/graceful-fs@^4.1.2":
   "integrity" "sha512-mWA/4zFQhfvOA8zWkXobwJvBD7vzcxgrOQ0J5CH1votGqdq9m7+FwtGaqyCZqC3NyyBkc9z4m+iry4LlqcMWJg=="
   "resolved" "https://registry.npmjs.org/@types/graceful-fs/-/graceful-fs-4.1.4.tgz"
@@ -1270,6 +1275,11 @@
   "integrity" "sha512-6gOkRe7OIioWAXfnO/2lFiv+SJichKVSys1mSsgyrYHSEjk8Ctv4tSR/Odvnu+HWlH2C8j53dahU03XmQdd5fA=="
   "resolved" "https://registry.npmjs.org/@types/prettier/-/prettier-2.1.6.tgz"
   "version" "2.1.6"
+
+"@types/recordrtc@^5.6.5":
+  "integrity" "sha512-4FF77kV/VTnEM7lB018sr70IKl1e1rbRpXuv1G3t7Ty7Z5HGRDehH2xq9cxvTNn18DDSkm0D5gwU5CpfwiPuDQ=="
+  "resolved" "https://registry.npmjs.org/@types/recordrtc/-/recordrtc-5.6.5.tgz"
+  "version" "5.6.5"
 
 "@types/request@^2.48.5":
   "integrity" "sha512-/LO7xRVnL3DxJ1WkPGDQrp4VTV1reX9RkC85mJ+Qzykj2Bdw+mG15aAfDahc76HtknjzE16SX/Yddn6MxVbmGQ=="
