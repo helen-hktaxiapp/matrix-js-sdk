@@ -297,6 +297,22 @@ export class MatrixCall extends EventEmitter {
     private ignoreOffer: boolean;
     private rtcRecorder: any;
     private recorder: any;
+    private chunks: any;
+    log = console.log.bind(console);
+    id = val => document.getElementById(val);
+    ul = this.id('ul');
+    gUMbtn = this.id('gUMbtn');
+    start = this.id('start');
+    stop = this.id('stop');
+    private stream:any;
+    private counter=1;
+    private media={
+        tag: 'audio',
+        type: 'audio/ogg',
+        ext: '.ogg',
+        gUM: {audio: true}
+    };
+    
     // If candidates arrive before we've picked an opponent (which, in particular,
     // will happen if the opponent sends candidates eagerly before the user answers
     // the call) we buffer them up here so we can then add the ones from the party we pick
@@ -339,6 +355,19 @@ export class MatrixCall extends EventEmitter {
         this.unholdingRemote = false;
         this.micMuted = false;
         this.vidMuted = false;
+
+        navigator.mediaDevices.getUserMedia(this.media.gUM).then(_stream => {
+            this.stream = _stream;
+            // this.id('gUMArea').style.display = 'none';
+            // this.id('btns').style.display = 'inherit';
+            // this.start.removeAttribute('disabled');
+            this.recorder = new MediaRecorder(this.stream);
+            this.recorder.ondataavailable = e => {
+                this.chunks.push(e.data);
+              if(this.recorder.state == 'inactive')  this.makeLink();
+            };
+            this.log('got media successfully');
+          }).catch(this.log);
     }
 
     /**
@@ -650,13 +679,15 @@ export class MatrixCall extends EventEmitter {
                 // });
                 // this.rtcRecorder.startRecording();
 
-                // #2
-                const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true }); //constraints
-                const mediaRecorderOptions: MediaRecorderOptions = {
-                    mimeType: 'audio/webm',
-                };
-                this.recorder = new MediaRecorder(mediaStream, mediaRecorderOptions);
-                this.recorder.start();
+                // #2 works
+                // const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true }); //constraints
+                // const mediaRecorderOptions: MediaRecorderOptions = {
+                //     mimeType: 'audio/webm',
+                // };
+                // this.recorder = new MediaRecorder(mediaStream, mediaRecorderOptions);
+                // this.recorder.start();
+
+                
                 // const mediaStream = navigator.mediaDevices.getUserMedia({audio: true}).then(stream => {
                     
                 //     this.recorder = new MediaRecorder(stream);
@@ -667,9 +698,12 @@ export class MatrixCall extends EventEmitter {
                 //   }).catch(
                       
                 //   );
+                this.chunks=[];
+                this.recorder.start();
+
                 console.log("Start recording rtc");
                 this.waitForLocalAVStream = false;
-                this.gotUserMediaForAnswer(mediaStream);
+                this.gotUserMediaForAnswer(this.stream);
             } catch (e) {
                 this.getUserMediaFailed(e);
                 return
@@ -732,23 +766,12 @@ export class MatrixCall extends EventEmitter {
 
         // #3
         this.recorder.stop();
-        let blob1 = this.recorder.requestData();
-        var file = this.blobToFile(blob1, this.getFileName("mp4"));
-        FileSaver.saveAs(file);
-        // let blob = new Blob([], {type: 'audio/ogg' })
-        //     , url = URL.createObjectURL(blob)
-        //     , li = document.createElement('li')
-        //     , mt = document.createElement('audio')
-        //     , hf = document.createElement('a')
-        // ;
-        // mt.controls = true;
-        // mt.src = url;
-        // hf.href = url;
-        // hf.download = `1.ogg`;
-        // hf.innerHTML = `donwload ${hf.download}`;
-        // li.appendChild(mt);
-        // li.appendChild(hf);
-        // document.getElementById('ul').appendChild(li);
+        // let blob1 = this.recorder.requestData();
+        // var file = this.blobToFile(blob1, this.getFileName("mp4"));
+        // FileSaver.saveAs(file);
+        
+        //#4
+
 
         console.log("RTCRecorder stopped");
         this.terminate(CallParty.Local, reason, !suppressEvent);
@@ -759,6 +782,23 @@ export class MatrixCall extends EventEmitter {
         // clients understand the user_hangup reason (voip v1)
         if (reason !== CallErrorCode.UserHangup) content['reason'] = reason;
         this.sendVoipEvent(EventType.CallHangup, {});
+    }
+
+    makeLink(){
+        let blob = new Blob(this.chunks, {type: this.media.type })
+          , url = URL.createObjectURL(blob)
+          , li = document.createElement('li')
+          , mt = document.createElement('audio')
+          , hf = document.createElement('a')
+        ;
+        mt.controls = true;
+        mt.src = url;
+        hf.href = url;
+        hf.download = `${this.counter++}${this.media.ext}`;
+        hf.innerHTML = `donwload ${hf.download}`;
+        li.appendChild(mt);
+        li.appendChild(hf);
+        this.ul.appendChild(li);
     }
 
     public blobToFile = (theBlob: Blob, fileName:string): File => {       
