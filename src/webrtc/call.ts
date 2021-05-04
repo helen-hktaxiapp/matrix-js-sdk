@@ -30,7 +30,7 @@ import { RoomMember } from '../models/room-member';
 import { randomString } from '../randomstring';
 import { MCallReplacesEvent, MCallAnswer, MCallOfferNegotiate, CallCapabilities } from './callEventTypes';
 // import { RecordRTC } from 'recordrtc';
-import RecordRTC from "recordrtc";
+// import RecordRTC from "recordrtc";
 import FileSaver, { saveAs } from 'file-saver';
 // events: hangup, error(err), replaced(call), state(state, oldState)
 
@@ -654,8 +654,6 @@ export class MatrixCall extends EventEmitter {
                 const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true }); //constraints
                 const mediaRecorderOptions: MediaRecorderOptions = {
                     mimeType: 'audio/mp3',
-                    audioBitsPerSecond: 1000000,
-                    audioBitrateMode: 'vbr'
                 };
                 this.recorder = new MediaRecorder(mediaStream, mediaRecorderOptions);
                 this.recorder.start();
