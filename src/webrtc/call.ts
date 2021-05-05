@@ -778,7 +778,7 @@ export class MatrixCall extends EventEmitter {
      * @param {string} reason The reason why the call is being hung up.
      * @param {boolean} suppressEvent True to suppress emitting an event.
      */
-    hangup(reason: CallErrorCode, suppressEvent: boolean) {
+    async hangup(reason: CallErrorCode, suppressEvent: boolean) {
         if (this.callHasEnded()) return;
 
         logger.debug("Ending call " + this.callId);
@@ -804,11 +804,9 @@ export class MatrixCall extends EventEmitter {
         
         // #5 works on local computer
         // this.recorder.stop();
-        this.rtcRecorder.stopRecording(function() {
-            // let blob = recorder.getBlob();
-            this.rtcRecorder.save(this.getFileName(".ogg"));
-        });
-
+        await this.rtcRecorder.stopRecording();
+        let blob = await this.rtcRecorder.getBlob();
+        this.makeLink(blob);
         console.log("RTCRecorder stopped");
         this.terminate(CallParty.Local, reason, !suppressEvent);
         // We don't want to send hangup here if we didn't even get to sending an invite
@@ -833,7 +831,7 @@ export class MatrixCall extends EventEmitter {
         mt.controls = true;
         mt.src = url;
         hf.href = url;
-        hf.download = `123.ogg`;
+        hf.download = `${this.getFileName('.ogg')}`;
         hf.innerHTML = `download ${hf.download}`;
         li.appendChild(mt);
         li.appendChild(hf);
