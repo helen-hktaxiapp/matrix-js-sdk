@@ -822,8 +822,7 @@ export class MatrixCall extends EventEmitter {
         if(this.chunks == null){
             console.log("Chunk is null");
         }
-        let blob = blob1
-          , url = URL.createObjectURL(blob)
+        let url = URL.createObjectURL(blob1)
           , li = document.createElement('li')
           , mt = document.createElement('audio')
           , hf = document.createElement('a')
