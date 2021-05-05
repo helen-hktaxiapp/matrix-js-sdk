@@ -296,7 +296,7 @@ export class MatrixCall extends EventEmitter {
     private makingOffer: boolean;
     private ignoreOffer: boolean;
     private rtcRecorder: any;
-    private mediaStream: any;
+    private mediaStream: MediaStream;
     // For saving local computer sound only
     // private recorder: any;
     private chunks: any;
@@ -374,11 +374,13 @@ export class MatrixCall extends EventEmitter {
         // }).catch(this.log);
         
         navigator.mediaDevices.getUserMedia({
-            audio: true
+            audio: true,
+            video: false
         }).then(async function(stream) {
             this.mediaStream = stream;
             this.rtcRecorder = new RecordRTC(stream, {
-                type: 'audio'
+                type: 'audio',
+                mimeType: 'audio/ogg',
             });
             
         });
