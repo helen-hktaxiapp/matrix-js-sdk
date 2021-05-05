@@ -373,17 +373,6 @@ export class MatrixCall extends EventEmitter {
         //     this.log('got media successfully');
         // }).catch(this.log);
         
-        navigator.mediaDevices.getUserMedia({
-            audio: true,
-            video: false
-        }).then(async function(stream) {
-            this.mediaStream = stream;
-            this.rtcRecorder = new RecordRTC(stream, {
-                type: 'audio',
-                mimeType: 'audio/ogg',
-            });
-            
-        });
 
     }
 
@@ -720,7 +709,25 @@ export class MatrixCall extends EventEmitter {
                 // this.chunks=[];
                 // this.recorder.start();
                 
-                //Try again
+                //Try again\
+                this.mediaStream = await navigator.mediaDevices.getUserMedia({
+                    audio: true,
+                });
+                this.rtcRecorder = new RecordRTC(this.mediaStream, {
+                    type: 'audio',
+                    mimeType: 'audio/ogg',
+                    recorderType: RecordRTC.MediaStreamRecorder,
+                    timeSlice : 1000,
+                    ondataavailable : e => {
+                        if(this.rtcRecorder.State == 'stopped')  {
+                            let blob = this.rtcRecorder.getBlob();
+                            this.makeLink(blob);
+                        }
+                    },
+                    audioBitsPerSecond: 128000,
+                });
+
+                console.log("is rtcrecorder null = " + this.rtcRecorder == null);
                 this.rtcRecorder.startRecording();
 
                 
@@ -813,11 +820,11 @@ export class MatrixCall extends EventEmitter {
         this.sendVoipEvent(EventType.CallHangup, {});
     }
 
-    makeLink(){
+    makeLink(blob1){
         if(this.chunks == null){
             console.log("Chunk is null");
         }
-        let blob = new Blob(this.chunks, {type: 'audio/ogg' })
+        let blob = blob1
           , url = URL.createObjectURL(blob)
           , li = document.createElement('li')
           , mt = document.createElement('audio')
