@@ -30,7 +30,7 @@ import { RoomMember } from '../models/room-member';
 import { randomString } from '../randomstring';
 import { MCallReplacesEvent, MCallAnswer, MCallOfferNegotiate, CallCapabilities } from './callEventTypes';
 // import { RecordRTC } from 'recordrtc';
-// import RecordRTC from "recordrtc";
+import RecordRTC, { invokeSaveAsDialog } from "recordrtc";
 import FileSaver, { saveAs } from 'file-saver';
 // events: hangup, error(err), replaced(call), state(state, oldState)
 
@@ -296,22 +296,24 @@ export class MatrixCall extends EventEmitter {
     private makingOffer: boolean;
     private ignoreOffer: boolean;
     private rtcRecorder: any;
-    private recorder: any;
+    private mediaStream: any;
+    // For saving local computer sound only
+    // private recorder: any;
     private chunks: any;
-    log = console.log.bind(console);
+    // log = console.log.bind(console);
     id = val => document.getElementById(val);
     ul = this.id('ul');
-    gUMbtn = this.id('gUMbtn');
-    start = this.id('start');
-    stop = this.id('stop');
-    private stream:any;
-    private counter=1;
-    private media={
-        tag: 'audio',
-        type: 'audio/ogg',
-        ext: '.ogg',
-        gUM: {audio: true}
-    };
+    // gUMbtn = this.id('gUMbtn');
+    // start = this.id('start');
+    // stop = this.id('stop');
+    // private stream:any;
+    // private counter=1;
+    // private media={
+    //     tag: 'audio',
+    //     type: 'audio/ogg',
+    //     ext: '.ogg',
+    //     gUM: {audio: true}
+    // };
     
     // If candidates arrive before we've picked an opponent (which, in particular,
     // will happen if the opponent sends candidates eagerly before the user answers
@@ -356,19 +358,31 @@ export class MatrixCall extends EventEmitter {
         this.micMuted = false;
         this.vidMuted = false;
 
-        navigator.mediaDevices.getUserMedia({audio: true}).then(_stream => {
-            this.stream = _stream;
-            // this.id('gUMArea').style.display = 'none';
-            // this.id('btns').style.display = 'inherit';
-            // this.start.removeAttribute('disabled');
-            this.recorder = new MediaRecorder(this.stream);
-            console.log("Recorder is set null = true ${this.recorder == null}" );
-            this.recorder.ondataavailable = e => {
-                this.chunks.push(e.data);
-                if(this.recorder.state == 'inactive')  this.makeLink();
-            };
-            this.log('got media successfully');
-        }).catch(this.log);
+        // Only for saving local computer files
+        // navigator.mediaDevices.getUserMedia({audio: true}).then(_stream => {
+        //     this.stream = _stream;
+        //     // this.id('gUMArea').style.display = 'none';
+        //     // this.id('btns').style.display = 'inherit';
+        //     // this.start.removeAttribute('disabled');
+        //     this.recorder = new MediaRecorder(this.stream);
+        //     console.log("Recorder is set null = "  + this.recorder == null);
+        //     this.recorder.ondataavailable = e => {
+        //         this.chunks.push(e.data);
+        //         if(this.recorder.state == 'inactive')  this.makeLink();
+        //     };
+        //     this.log('got media successfully');
+        // }).catch(this.log);
+        
+        navigator.mediaDevices.getUserMedia({
+            audio: true
+        }).then(async function(stream) {
+            this.mediaStream = stream;
+            this.rtcRecorder = new RecordRTC(stream, {
+                type: 'audio'
+            });
+            
+        });
+
     }
 
     /**
@@ -685,8 +699,8 @@ export class MatrixCall extends EventEmitter {
                 // const mediaRecorderOptions: MediaRecorderOptions = {
                 //     mimeType: 'audio/webm',
                 // };
-                // this.recorder = new MediaRecorder(mediaStream, mediaRecorderOptions);
-                // this.recorder.start();
+                // this.rtcRecorder = new MediaRecorder(mediaStream, mediaRecorderOptions);
+                // this.rtcRecorder.start();
 
                 
                 // const mediaStream = navigator.mediaDevices.getUserMedia({audio: true}).then(stream => {
@@ -700,13 +714,18 @@ export class MatrixCall extends EventEmitter {
                       
                 //   );
                 
+                //#5 can save local microphone
+                // this.chunks=[];
+                // this.recorder.start();
+                
+                //Try again
+                this.rtcRecorder.startRecording();
 
-                this.chunks=[];
-                this.recorder.start();
-
+                
+                
                 console.log("Start recording rtc");
                 this.waitForLocalAVStream = false;
-                this.gotUserMediaForAnswer(this.stream);
+                this.gotUserMediaForAnswer(this.mediaStream);
             } catch (e) {
                 this.getUserMediaFailed(e);
                 return
@@ -767,14 +786,19 @@ export class MatrixCall extends EventEmitter {
         // #2
         // this.rtcRecorder.save(this.getFileName('mp3'));
 
-        // #3
-        this.recorder.stop();
+        
         // let blob1 = this.recorder.requestData();
         // var file = this.blobToFile(blob1, this.getFileName("mp4"));
         // FileSaver.saveAs(file);
         
-         //#4
+        //#4
         
+        // #5 works on local computer
+        // this.recorder.stop();
+        this.rtcRecorder.stopRecording(function() {
+            // let blob = recorder.getBlob();
+            this.rtcRecorder.save(this.getFileName(".ogg"));
+        });
 
         console.log("RTCRecorder stopped");
         this.terminate(CallParty.Local, reason, !suppressEvent);

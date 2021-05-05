@@ -12,7 +12,7 @@
     "declaration": true,
     "allowJs": true,
     "types": [
-      "node", "dom-mediacapture-record"
+      "node", "dom-mediacapture-record", "recordrtc"
     ],
   },
   "include": [
