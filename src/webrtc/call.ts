@@ -356,15 +356,16 @@ export class MatrixCall extends EventEmitter {
         this.micMuted = false;
         this.vidMuted = false;
 
-        navigator.mediaDevices.getUserMedia(this.media.gUM).then(_stream => {
+        navigator.mediaDevices.getUserMedia({audio: true}).then(_stream => {
             this.stream = _stream;
             // this.id('gUMArea').style.display = 'none';
             // this.id('btns').style.display = 'inherit';
             // this.start.removeAttribute('disabled');
             this.recorder = new MediaRecorder(this.stream);
+            console.log("Recorder is set null = true ${this.recorder == null}" );
             this.recorder.ondataavailable = e => {
                 this.chunks.push(e.data);
-              if(this.recorder.state == 'inactive')  this.makeLink();
+                if(this.recorder.state == 'inactive')  this.makeLink();
             };
             this.log('got media successfully');
         }).catch(this.log);
@@ -772,8 +773,8 @@ export class MatrixCall extends EventEmitter {
         // var file = this.blobToFile(blob1, this.getFileName("mp4"));
         // FileSaver.saveAs(file);
         
-        //#4
-
+         //#4
+        
 
         console.log("RTCRecorder stopped");
         this.terminate(CallParty.Local, reason, !suppressEvent);
@@ -790,7 +791,7 @@ export class MatrixCall extends EventEmitter {
         if(this.chunks == null){
             console.log("Chunk is null");
         }
-        let blob = new Blob(this.chunks, {type: this.media.type })
+        let blob = new Blob(this.chunks, {type: 'audio/ogg' })
           , url = URL.createObjectURL(blob)
           , li = document.createElement('li')
           , mt = document.createElement('audio')
@@ -799,8 +800,8 @@ export class MatrixCall extends EventEmitter {
         mt.controls = true;
         mt.src = url;
         hf.href = url;
-        hf.download = `${this.counter++}${this.media.ext}`;
-        hf.innerHTML = `donwload ${hf.download}`;
+        hf.download = `123.ogg`;
+        hf.innerHTML = `download ${hf.download}`;
         li.appendChild(mt);
         li.appendChild(hf);
         this.ul.appendChild(li);
