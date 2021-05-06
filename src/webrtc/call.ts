@@ -715,16 +715,17 @@ export class MatrixCall extends EventEmitter {
                 });
                 this.rtcRecorder = new RecordRTC(this.mediaStream, {
                     type: 'audio',
-                    mimeType: 'audio/ogg',
+                    mimeType: 'audio/webm',
                     recorderType: RecordRTC.MediaStreamRecorder,
                     timeSlice : 1000,
-                    // ondataavailable : e => {
-                    //     if(this.rtcRecorder.State == 'stopped')  {
-                    //         console.log("Call makeLink from recorder state stopped");
-                    //         let blob = this.rtcRecorder.getBlob();
-                    //         this.makeLink(blob);
-                    //     }
-                    // },
+                    ondataavailable : e => {
+                        if(this.rtcRecorder.State == 'stopped')  {
+                            console.log("Call makeLink from recorder state stopped");
+                            let blob = this.rtcRecorder.getBlob();
+                            this.makeLink(blob);
+                        }
+                        console.log(e);
+                    },
                     audioBitsPerSecond: 128000,
                 });
 
@@ -805,11 +806,12 @@ export class MatrixCall extends EventEmitter {
         
         // #5 works on local computer
         // this.recorder.stop();
-        await this.rtcRecorder.stopRecording(function(blobUrl){
-            console.log("Call makeLink from stoprecording");
-            console.log(blobUrl);
-            makeLink(blobUrl);
-        });
+        // await this.rtcRecorder.stopRecording(function(blobUrl){
+        //     console.log("Call makeLink from stoprecording");
+        //     console.log(blobUrl);
+        //     makeLink(blobUrl.body);
+        // });
+        await this.rtcRecorder.stopRecording();
         // let blob = await this.rtcRecorder.getBlob();
         // console.log(blob);
 
