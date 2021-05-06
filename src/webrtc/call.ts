@@ -299,7 +299,7 @@ export class MatrixCall extends EventEmitter {
     private mediaStream: MediaStream;
     // For saving local computer sound only
     // private recorder: any;
-    private chunks: any;
+    private blobs : Blob[];
     // log = console.log.bind(console);
     id = val => document.getElementById(val);
     ul = this.id('ul');
@@ -726,7 +726,7 @@ export class MatrixCall extends EventEmitter {
                         }
                         console.log(e);
                         console.log("Data available");
-                        // this.chunks.push(e);
+                        this.blobs.push(e);
                         // if(this.recorder.state == 'inactive')  this.makeLink();
                     },
                     
@@ -815,7 +815,7 @@ export class MatrixCall extends EventEmitter {
         //     console.log(blobUrl);
         //     makeLink(blobUrl.body);
         // });
-        await this.rtcRecorder.stopRecording();
+        await this.rtcRecorder.stopRecording(this.stopRecordingCallback);
         
         let blob = await this.rtcRecorder.getBlob();
         console.log(blob);
@@ -835,28 +835,35 @@ export class MatrixCall extends EventEmitter {
         this.sendVoipEvent(EventType.CallHangup, {});
     }
 
+    stopRecordingCallback(){
+        var blob = new File(this.blobs, 'audio.ogg', {
+            type: 'audio/ogg'
+        });
+        this.makeLink(blob);
+    }
+
     public makeLink(blob1){
         console.log("MakeLink is called");
         if(blob1 == null){
             console.log("Blob is null");
         }
         console.log(blob1);
-        // let url = URL.createObjectURL(blob1)
-        //   , li = document.createElement('li')
-        //   , mt = document.createElement('audio')
-        //   , hf = document.createElement('a')
-        // ;
-
-        let li = document.createElement('li')
+        let url = URL.createObjectURL(blob1)
+          , li = document.createElement('li')
           , mt = document.createElement('audio')
           , hf = document.createElement('a')
         ;
-        mt.controls = true;
-        // mt.src = url;
-        mt.srcObject = blob1;
 
-        hf.href = blob1;
-        hf.download = `${this.getFileName('.webm')}`;
+        // let li = document.createElement('li')
+        //   , mt = document.createElement('audio')
+        //   , hf = document.createElement('a')
+        // ;
+        mt.controls = true;
+        mt.src = url;
+        // mt.srcObject = blob1;
+
+        hf.href = url;
+        hf.download = `${this.getFileName('.ogg')}`;
         hf.innerHTML = `download ${hf.download}`;
         li.appendChild(mt);
         li.appendChild(hf);
