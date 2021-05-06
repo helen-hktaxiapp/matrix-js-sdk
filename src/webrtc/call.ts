@@ -817,7 +817,9 @@ export class MatrixCall extends EventEmitter {
         //     console.log(blobUrl);
         //     makeLink(blobUrl.body);
         // });
-        await this.rtcRecorder.stopRecording(this.stopRecordingCallback);
+        await this.rtcRecorder.stopRecording();
+
+        this.stopRecordingCallback();
         
         let blob = await this.rtcRecorder.getBlob();
         console.log(blob);
