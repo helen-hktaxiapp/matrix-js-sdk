@@ -844,11 +844,11 @@ export class MatrixCall extends EventEmitter {
         //Works on single stream
         // await this.rtcRecorder.stopRecording();
         this.rtcRecorder.stop((b) => {
-            var blob = new File(b, 'audio.ogg', {
+            var blob = new File([b], 'audio.ogg', {
                 type: 'audio/ogg'
             });
             console.log("Print this.blobs");
-            console.log(this.blobs);
+            // console.log(this.blobs);
             console.log("Print blob");
             console.log(blob);
             this.makeLink(blob);
