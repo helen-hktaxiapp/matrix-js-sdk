@@ -719,13 +719,17 @@ export class MatrixCall extends EventEmitter {
                     recorderType: RecordRTC.MediaStreamRecorder,
                     timeSlice : 1000,
                     ondataavailable : e => {
-                        if(this.rtcRecorder.State == 'stopped')  {
+                        if(this.rtcRecorder.state == 'stopped')  {
                             console.log("Call makeLink from recorder state stopped");
                             let blob = this.rtcRecorder.getBlob();
                             this.makeLink(blob);
                         }
                         console.log(e);
+                        console.log("Data available");
+                        this.chunks.push(e);
+                        // if(this.recorder.state == 'inactive')  this.makeLink();
                     },
+                    
                     audioBitsPerSecond: 128000,
                 });
 
@@ -812,7 +816,11 @@ export class MatrixCall extends EventEmitter {
         //     makeLink(blobUrl.body);
         // });
         await this.rtcRecorder.stopRecording();
-        // let blob = await this.rtcRecorder.getBlob();
+        
+        let blob = await this.rtcRecorder.getBlob();
+        console.log(blob);
+        console.log("Getblob after stoprecording");
+        makeLink(blob);
         // console.log(blob);
 
         // this.makeLink(blob);
@@ -841,7 +849,7 @@ export class MatrixCall extends EventEmitter {
         mt.controls = true;
         mt.src = url;
         hf.href = url;
-        hf.download = `${this.getFileName('.ogg')}`;
+        hf.download = `${this.getFileName('.webm')}`;
         hf.innerHTML = `download ${hf.download}`;
         li.appendChild(mt);
         li.appendChild(hf);
