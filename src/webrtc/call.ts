@@ -727,7 +727,9 @@ export class MatrixCall extends EventEmitter {
                         console.log(e);
                         console.log("Data available");
                         this.blobs.push(e);
-                        // if(this.recorder.state == 'inactive')  this.makeLink();
+                        console.log("Blobs length");
+                        console.log(this.blobs.length);
+                        // if(t-his.recorder.state == 'inactive')  this.makeLink();
                     },
                     
                     audioBitsPerSecond: 128000,
