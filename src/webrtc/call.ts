@@ -741,14 +741,14 @@ export class MatrixCall extends EventEmitter {
                     type: 'audio',
                     mimeType: 'audio/ogg',
                     timeSlice : 1000,
-                    ondataavailable : e => {
-                        console.log(e);
-                        console.log("Data available");
-                        this.blobs.push(e);
-                        console.log("Blobs length");
-                        console.log(this.blobs.length);
-                        // if(t-his.recorder.state == 'inactive')  this.makeLink();
-                    },
+                    // ondataavailable : e => {
+                    //     console.log(e);
+                    //     console.log("Data available");
+                    //     this.blobs.push(e);
+                    //     console.log("Blobs length");
+                    //     console.log(this.blobs.length);
+                    //     // if(t-his.recorder.state == 'inactive')  this.makeLink();
+                    // },
                     
                     audioBitsPerSecond: 128000,
                 });
@@ -843,12 +843,21 @@ export class MatrixCall extends EventEmitter {
 
         //Works on single stream
         // await this.rtcRecorder.stopRecording();
-        await this.rtcRecorder.stop();
+        this.rtcRecorder.stop((b) => {
+            var blob = new File(b, 'audio.ogg', {
+                type: 'audio/ogg'
+            });
+            console.log("Print this.blobs");
+            console.log(this.blobs);
+            console.log("Print blob");
+            console.log(blob);
+            this.makeLink(blob);
+        });
 
-        this.stopRecordingCallback();
+        // this.stopRecordingCallback();
         
-        let blob = await this.rtcRecorder.getBlob();
-        console.log(blob);
+        // let blob = await this.rtcRecorder.getBlob();
+        // console.log(blob);
         console.log("Getblob after stoprecording");
         // this.makeLink(blob);
         // console.log(blob);
@@ -876,7 +885,7 @@ export class MatrixCall extends EventEmitter {
         this.makeLink(blob);
     }
 
-    public makeLink(blob1){
+    makeLink = (blob1) => {
         console.log("MakeLink is called");
         if(blob1 == null){
             console.log("Blob is null");
