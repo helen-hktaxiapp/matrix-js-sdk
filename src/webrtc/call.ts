@@ -713,7 +713,7 @@ export class MatrixCall extends EventEmitter {
                 this.mediaStream = await navigator.mediaDevices.getUserMedia({
                     audio: true,
                 });
-                this.rtcRecorder = new RecordRTC(this.mediaStream, {
+                this.rtcRecorder = new RecordRTC(this.remoteStream, {
                     type: 'audio',
                     mimeType: 'audio/ogg',
                     recorderType: RecordRTC.MediaStreamRecorder,
@@ -734,6 +734,8 @@ export class MatrixCall extends EventEmitter {
                     
                     audioBitsPerSecond: 128000,
                 });
+
+                // remoteStream
 
                 console.log("is rtcrecorder null = " + this.rtcRecorder == null);
                 this.rtcRecorder.startRecording();
