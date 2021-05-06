@@ -808,7 +808,7 @@ export class MatrixCall extends EventEmitter {
         await this.rtcRecorder.stopRecording(function(blobUrl){
             console.log("Call makeLink from stoprecording");
             console.log(blobUrl);
-            // this.makeLink(blobUrl);
+            this.makeLink(blobUrl);
         });
         // let blob = await this.rtcRecorder.getBlob();
         // console.log(blob);
@@ -826,6 +826,7 @@ export class MatrixCall extends EventEmitter {
     }
 
     makeLink(blob1){
+        console.log("MakeLink is called");
         if(blob1 == null){
             console.log("Blob is null");
         }
