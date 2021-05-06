@@ -299,7 +299,7 @@ export class MatrixCall extends EventEmitter {
     private mediaStream: MediaStream;
     // For saving local computer sound only
     // private recorder: any;
-    private blobs : Blob[];
+    private blobs : Blob[] = [];
     // log = console.log.bind(console);
     id = val => document.getElementById(val);
     ul = this.id('ul');
