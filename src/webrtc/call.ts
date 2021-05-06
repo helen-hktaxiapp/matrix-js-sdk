@@ -720,6 +720,7 @@ export class MatrixCall extends EventEmitter {
                     timeSlice : 1000,
                     ondataavailable : e => {
                         if(this.rtcRecorder.State == 'stopped')  {
+                            console.log("Call makeLink from recorder state stopped");
                             let blob = this.rtcRecorder.getBlob();
                             this.makeLink(blob);
                         }
@@ -805,8 +806,9 @@ export class MatrixCall extends EventEmitter {
         // #5 works on local computer
         // this.recorder.stop();
         await this.rtcRecorder.stopRecording(function(blobUrl){
+            console.log("Call makeLink from stoprecording");
             console.log(blobUrl);
-            this.makeLink(blobUrl);
+            // this.makeLink(blobUrl);
         });
         // let blob = await this.rtcRecorder.getBlob();
         // console.log(blob);
