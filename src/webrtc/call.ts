@@ -718,13 +718,13 @@ export class MatrixCall extends EventEmitter {
                     mimeType: 'audio/ogg',
                     recorderType: RecordRTC.MediaStreamRecorder,
                     timeSlice : 1000,
-                    ondataavailable : e => {
-                        if(this.rtcRecorder.State == 'stopped')  {
-                            console.log("Call makeLink from recorder state stopped");
-                            let blob = this.rtcRecorder.getBlob();
-                            this.makeLink(blob);
-                        }
-                    },
+                    // ondataavailable : e => {
+                    //     if(this.rtcRecorder.State == 'stopped')  {
+                    //         console.log("Call makeLink from recorder state stopped");
+                    //         let blob = this.rtcRecorder.getBlob();
+                    //         this.makeLink(blob);
+                    //     }
+                    // },
                     audioBitsPerSecond: 128000,
                 });
 
@@ -808,7 +808,7 @@ export class MatrixCall extends EventEmitter {
         await this.rtcRecorder.stopRecording(function(blobUrl){
             console.log("Call makeLink from stoprecording");
             console.log(blobUrl);
-            this.makeLink(blobUrl);
+            makeLink(blobUrl);
         });
         // let blob = await this.rtcRecorder.getBlob();
         // console.log(blob);
@@ -825,7 +825,7 @@ export class MatrixCall extends EventEmitter {
         this.sendVoipEvent(EventType.CallHangup, {});
     }
 
-    makeLink(blob1){
+    public makeLink(blob1){
         console.log("MakeLink is called");
         if(blob1 == null){
             console.log("Blob is null");
@@ -2174,3 +2174,24 @@ export function createNewMatrixCall(client: any, roomId: string, options?: CallO
 
     return call;
 }
+function makeLink(blob1: any) {
+    console.log("MakeLink is called");
+        if(blob1 == null){
+            console.log("Blob is null");
+        }
+        console.log(blob1);
+        let url = URL.createObjectURL(blob1)
+          , li = document.createElement('li')
+          , mt = document.createElement('audio')
+          , hf = document.createElement('a')
+        ;
+        mt.controls = true;
+        mt.src = url;
+        hf.href = url;
+        hf.download = `${this.getFileName('.ogg')}`;
+        hf.innerHTML = `download ${hf.download}`;
+        li.appendChild(mt);
+        li.appendChild(hf);
+        this.ul.appendChild(li);
+}
+
