@@ -804,9 +804,14 @@ export class MatrixCall extends EventEmitter {
         
         // #5 works on local computer
         // this.recorder.stop();
-        await this.rtcRecorder.stopRecording();
-        let blob = await this.rtcRecorder.getBlob();
-        this.makeLink(blob);
+        await this.rtcRecorder.stopRecording(function(blobUrl){
+            console.log(blobUrl);
+            this.makeLink(blobUrl);
+        });
+        // let blob = await this.rtcRecorder.getBlob();
+        // console.log(blob);
+
+        // this.makeLink(blob);
         console.log("RTCRecorder stopped");
         this.terminate(CallParty.Local, reason, !suppressEvent);
         // We don't want to send hangup here if we didn't even get to sending an invite
@@ -821,7 +826,6 @@ export class MatrixCall extends EventEmitter {
     makeLink(blob1){
         if(blob1 == null){
             console.log("Blob is null");
-            
         }
         console.log(blob1);
         let url = URL.createObjectURL(blob1)
