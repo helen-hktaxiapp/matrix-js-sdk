@@ -837,7 +837,7 @@ export class MatrixCall extends EventEmitter {
         this.sendVoipEvent(EventType.CallHangup, {});
     }
 
-    stopRecordingCallback(){
+    stopRecordingCallback = () => {
         var blob = new File(this.blobs, 'audio.ogg', {
             type: 'audio/ogg'
         });
