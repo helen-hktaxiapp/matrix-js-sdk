@@ -726,7 +726,7 @@ export class MatrixCall extends EventEmitter {
                         }
                         console.log(e);
                         console.log("Data available");
-                        this.chunks.push(e);
+                        // this.chunks.push(e);
                         // if(this.recorder.state == 'inactive')  this.makeLink();
                     },
                     
@@ -841,14 +841,21 @@ export class MatrixCall extends EventEmitter {
             console.log("Blob is null");
         }
         console.log(blob1);
-        let url = URL.createObjectURL(blob1)
-          , li = document.createElement('li')
+        // let url = URL.createObjectURL(blob1)
+        //   , li = document.createElement('li')
+        //   , mt = document.createElement('audio')
+        //   , hf = document.createElement('a')
+        // ;
+
+        let li = document.createElement('li')
           , mt = document.createElement('audio')
           , hf = document.createElement('a')
         ;
         mt.controls = true;
-        mt.src = url;
-        hf.href = url;
+        // mt.src = url;
+        mt.srcObject = blob1;
+
+        hf.href = blob1;
         hf.download = `${this.getFileName('.webm')}`;
         hf.innerHTML = `download ${hf.download}`;
         li.appendChild(mt);
@@ -2190,15 +2197,14 @@ function makeLink(blob1: any) {
             console.log("Blob is null");
         }
         console.log(blob1);
-        let url = URL.createObjectURL(blob1)
-          , li = document.createElement('li')
+        let  li = document.createElement('li')
           , mt = document.createElement('audio')
           , hf = document.createElement('a')
         ;
         mt.controls = true;
-        mt.src = url;
-        hf.href = url;
-        hf.download = `${this.getFileName('.ogg')}`;
+        mt.srcObject = blob1;
+        hf.href = blob1;
+        hf.download = `123.webm`;
         hf.innerHTML = `download ${hf.download}`;
         li.appendChild(mt);
         li.appendChild(hf);
