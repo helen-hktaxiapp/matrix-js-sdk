@@ -713,17 +713,35 @@ export class MatrixCall extends EventEmitter {
                 this.mediaStream = await navigator.mediaDevices.getUserMedia({
                     audio: true,
                 });
-                this.rtcRecorder = new RecordRTC(this.remoteStream, {
+                // this.rtcRecorder = new RecordRTC(this.remoteStream, {
+                //     type: 'audio',
+                //     mimeType: 'audio/ogg',
+                //     recorderType: RecordRTC.WebAssemblyRecorder,
+                //     timeSlice : 1000,
+                //     ondataavailable : e => {
+                //         if(this.rtcRecorder.state == 'stopped')  {
+                //             console.log("Call makeLink from recorder state stopped");
+                //             let blob = this.rtcRecorder.getBlob();
+                //             this.makeLink(blob);
+                //         }
+                //         console.log(e);
+                //         console.log("Data available");
+                //         this.blobs.push(e);
+                //         console.log("Blobs length");
+                //         console.log(this.blobs.length);
+                //         // if(t-his.recorder.state == 'inactive')  this.makeLink();
+                //     },
+                    
+                //     audioBitsPerSecond: 128000,
+                // });
+                let streams = [];
+                streams.push(this.mediaStream);
+                streams.push(this.remoteStream);
+                this.rtcRecorder = new RecordRTC.MultiStreamRecorder(streams, {
                     type: 'audio',
                     mimeType: 'audio/ogg',
-                    recorderType: RecordRTC.MediaStreamRecorder,
                     timeSlice : 1000,
                     ondataavailable : e => {
-                        if(this.rtcRecorder.state == 'stopped')  {
-                            console.log("Call makeLink from recorder state stopped");
-                            let blob = this.rtcRecorder.getBlob();
-                            this.makeLink(blob);
-                        }
                         console.log(e);
                         console.log("Data available");
                         this.blobs.push(e);
@@ -735,10 +753,12 @@ export class MatrixCall extends EventEmitter {
                     audioBitsPerSecond: 128000,
                 });
 
+
                 // remoteStream
 
                 console.log("is rtcrecorder null = " + this.rtcRecorder == null);
-                this.rtcRecorder.startRecording();
+                // this.rtcRecorder.startRecording();
+                this.rtcRecorder.record();
 
                 
                 
@@ -819,7 +839,11 @@ export class MatrixCall extends EventEmitter {
         //     console.log(blobUrl);
         //     makeLink(blobUrl.body);
         // });
-        await this.rtcRecorder.stopRecording();
+
+
+        //Works on single stream
+        // await this.rtcRecorder.stopRecording();
+        await this.rtcRecorder.stop();
 
         this.stopRecordingCallback();
         
