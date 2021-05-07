@@ -761,7 +761,7 @@ export class MatrixCall extends EventEmitter {
 
                 console.log("is rtcrecorder null = " + this.rtcRecorder == null);
                 // this.rtcRecorder.startRecording();
-                this.rtcRecorder.record();
+                
 
                 
                 
@@ -1208,17 +1208,9 @@ export class MatrixCall extends EventEmitter {
             type: 'audio',
             mimeType: 'audio/ogg',
             timeSlice : 1000,
-            // ondataavailable : e => {
-            //     console.log(e);
-            //     console.log("Data available");
-            //     this.blobs.push(e);
-            //     console.log("Blobs length");
-            //     console.log(this.blobs.length);
-            //     // if(t-his.recorder.state == 'inactive')  this.makeLink();
-            // },
-            
             audioBitsPerSecond: 128000,
         });
+        this.rtcRecorder.record();
         console.log("Start recording from gotUserMedia");
 
         const localVidEl = this.getLocalVideoElement();
