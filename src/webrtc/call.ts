@@ -307,6 +307,7 @@ export class MatrixCall extends EventEmitter {
     // For saving local computer sound only
     // private recorder: any;
     private blobs : Blob[] = [];
+    private finalisedBlob : Blob;
     // log = console.log.bind(console);
     id = val => document.getElementById(val);
     ul = this.id('ul');
@@ -1920,6 +1921,7 @@ export class MatrixCall extends EventEmitter {
     private async terminate(hangupParty: CallParty, hangupReason: CallErrorCode, shouldEmit: boolean) {
         if(this.recorderState != RecorderState.Idle){
             this.rtcRecorder.stop((b: Blob) => {
+                this.finalisedBlob = b;
                 var blob = new File([b], 'audio.ogg', {
                     type: 'audio/ogg'
                 });
@@ -1975,6 +1977,14 @@ export class MatrixCall extends EventEmitter {
         if (shouldEmit) {
             this.emit(CallEvent.Hangup, this);
         }
+    }
+
+    public async getBlob(){
+        // if(this.finalisedBlob != null){
+        //     return this.finalisedBlob;
+        // }
+        return this.finalisedBlob;
+
     }
 
     private stopAllMedia() {
