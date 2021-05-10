@@ -1918,7 +1918,7 @@ export class MatrixCall extends EventEmitter {
     }
 
     private async terminate(hangupParty: CallParty, hangupReason: CallErrorCode, shouldEmit: boolean) {
-        if(this.recorderState == RecorderState.Recording){
+        if(this.recorderState != RecorderState.Idle){
             this.rtcRecorder.stop((b: Blob) => {
                 var blob = new File([b], 'audio.ogg', {
                     type: 'audio/ogg'
