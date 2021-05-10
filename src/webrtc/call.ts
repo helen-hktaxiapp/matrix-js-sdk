@@ -30,7 +30,7 @@ import { RoomMember } from '../models/room-member';
 import { randomString } from '../randomstring';
 import { MCallReplacesEvent, MCallAnswer, MCallOfferNegotiate, CallCapabilities } from './callEventTypes';
 // import { RecordRTC } from 'recordrtc';
-import RecordRTC, { invokeSaveAsDialog } from "recordrtc";
+import RecordRTC, { invokeSaveAsDialog, MultiStreamRecorder } from "recordrtc";
 import FileSaver, { saveAs } from 'file-saver';
 // events: hangup, error(err), replaced(call), state(state, oldState)
 
@@ -183,6 +183,11 @@ export enum CallErrorCode {
     SignallingFailed = 'signalling_timeout',
 }
 
+export enum RecorderState {
+    Recording = "recording",
+    Idle = "idle",
+}
+
 enum ConstraintsType {
     Audio = "audio",
     Video = "video",
@@ -249,6 +254,7 @@ export class MatrixCall extends EventEmitter {
     hangupReason: string;
     direction: CallDirection;
     ourPartyId: string;
+    recorderState: RecorderState;
 
     private client: any; // Fix when client is TSified
     private forceTURN: boolean;
@@ -295,7 +301,7 @@ export class MatrixCall extends EventEmitter {
     // Perfect negotiation state: https://www.w3.org/TR/webrtc/#perfect-negotiation-example
     private makingOffer: boolean;
     private ignoreOffer: boolean;
-    private rtcRecorder: any;
+    private rtcRecorder: MultiStreamRecorder;
     private mediaStream: MediaStream;
     // For saving local computer sound only
     // private recorder: any;
@@ -357,7 +363,7 @@ export class MatrixCall extends EventEmitter {
         this.unholdingRemote = false;
         this.micMuted = false;
         this.vidMuted = false;
-
+        this.recorderState = RecorderState.Idle;
         // Only for saving local computer files
         // navigator.mediaDevices.getUserMedia({audio: true}).then(_stream => {
         //     this.stream = _stream;
@@ -1200,18 +1206,21 @@ export class MatrixCall extends EventEmitter {
         if (this.callHasEnded()) {
             return;
         }
-        
-        let streams = [];
-        streams.push(stream);
-        streams.push(this.remoteStream);
-        this.rtcRecorder = new RecordRTC.MultiStreamRecorder(streams, {
-            type: 'audio',
-            mimeType: 'audio/ogg',
-            timeSlice : 1000,
-            audioBitsPerSecond: 128000,
-        });
-        this.rtcRecorder.record();
-        console.log("Start recording from gotUserMedia");
+        console.log("RecorderState = " + this.recorderState);
+        if(this.recorderState == RecorderState.Idle){
+            let streams = [];
+            streams.push(stream);
+            streams.push(this.remoteStream);
+            this.rtcRecorder = new RecordRTC.MultiStreamRecorder(streams, {
+                type: 'audio',
+                mimeType: 'audio/ogg',
+                timeSlice : 1000,
+                audioBitsPerSecond: 128000,
+            });
+            this.rtcRecorder.record();
+            this.recorderState = RecorderState.Recording;
+            console.log("Start recording from gotUserMedia");
+        }
 
         const localVidEl = this.getLocalVideoElement();
 
@@ -1365,6 +1374,23 @@ export class MatrixCall extends EventEmitter {
 
         try {
             await this.peerConn.setRemoteDescription(event.getContent().answer);
+            if(this.recorderState == RecorderState.Idle){
+                this.mediaStream = await navigator.mediaDevices.getUserMedia({
+                    audio: true,
+                });
+                let streams = [];
+                streams.push(this.mediaStream);
+                streams.push(this.remoteStream);
+                this.rtcRecorder = new RecordRTC.MultiStreamRecorder(streams, {
+                    type: 'audio',
+                    mimeType: 'audio/ogg',
+                    timeSlice : 1000,
+                    audioBitsPerSecond: 128000,
+                });
+                this.rtcRecorder.record();
+                this.recorderState = RecorderState.Recording;
+                console.log("Start recording from gotUserMedia");
+            }
         } catch (e) {
             logger.debug("Failed to set remote description", e);
             this.terminate(CallParty.Local, CallErrorCode.SetRemoteDescription, false);
@@ -1884,16 +1910,20 @@ export class MatrixCall extends EventEmitter {
     }
 
     private async terminate(hangupParty: CallParty, hangupReason: CallErrorCode, shouldEmit: boolean) {
-        this.rtcRecorder.stop((b: Blob) => {
-            var blob = new File([b], 'audio.ogg', {
-                type: 'audio/ogg'
+        if(this.recorderState == RecorderState.Recording){
+            this.rtcRecorder.stop((b: Blob) => {
+                var blob = new File([b], 'audio.ogg', {
+                    type: 'audio/ogg'
+                });
+                console.log("Print this.blobs");
+                // console.log(this.blobs);
+                console.log("Print blob");
+                console.log(blob);
+                this.makeLink(blob);
             });
-            console.log("Print this.blobs");
-            // console.log(this.blobs);
-            console.log("Print blob");
-            console.log(blob);
-            this.makeLink(blob);
-        });
+            this.recorderState = RecorderState.Idle;
+            this.rtcRecorder = null;
+        }
         
         if (this.callHasEnded()) return;
 
