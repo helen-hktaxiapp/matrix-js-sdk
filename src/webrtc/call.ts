@@ -1038,7 +1038,10 @@ export class MatrixCall extends EventEmitter {
             if(this.recorderState != RecorderState.Recording){
                 this.rtcRecorder.resume();
                 this.recorderState = RecorderState.Recording;
+                console.log("Remote123");
+                
             }
+            console.log("recorderstate" + this.recorderState);
         }else{
             this.rtcRecorder.pause();
             this.recorderState = RecorderState.Paused;
@@ -1728,7 +1731,7 @@ export class MatrixCall extends EventEmitter {
         this.remoteAudioElement.muted = false;
 
         this.remoteAudioElement.srcObject = this.remoteStream;
-
+        console.log("Play123 remote audio");
         // if audioOutput is non-default:
         try {
             if (audioOutput) {
@@ -2102,7 +2105,7 @@ export class MatrixCall extends EventEmitter {
         pc.addEventListener('icecandidate', this.gotLocalIceCandidate);
         pc.addEventListener('icegatheringstatechange', this.onIceGatheringStateChange);
         pc.addEventListener('track', this.onTrack);
-        pc.addEventListener('negotiationneeded', this.onNegotiationNeeded);
+        pc.addEventListener('negotiationneeded', this.onNegotiationNeeded); 
 
         return pc;
     }
