@@ -186,7 +186,6 @@ export enum CallErrorCode {
 export enum RecorderState {
     Recording = "recording",
     Idle = "idle", //uninitialised or terminated
-    Paused = "paused",
 }
 
 enum ConstraintsType {
@@ -1034,19 +1033,8 @@ export class MatrixCall extends EventEmitter {
         this.updateMuteStatus();
 
         if (!onHold) {
-            // this.playRemoteAudio();
-            if(this.recorderState != RecorderState.Recording){
-                this.rtcRecorder.resume();
-                this.recorderState = RecorderState.Recording;
-                console.log("Remote123");
-                
-            }
-            console.log("recorderstate" + this.recorderState);
-        }else{
-            this.rtcRecorder.pause();
-            this.recorderState = RecorderState.Paused;
+            this.playRemoteAudio();
         }
-
         this.emit(CallEvent.RemoteHoldUnhold, this.remoteOnHold);
     }
 
