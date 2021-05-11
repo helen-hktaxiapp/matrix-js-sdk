@@ -1031,10 +1031,10 @@ export class MatrixCall extends EventEmitter {
             // playing music etc. to the other side.
             tranceiver.direction = onHold ? 'inactive' : 'sendrecv';
         }
-        // this.updateMuteStatus();
+        this.updateMuteStatus();
 
         if (!onHold) {
-            this.playRemoteAudio();
+            // this.playRemoteAudio();
             if(this.recorderState != RecorderState.Recording){
                 this.rtcRecorder.resume();
                 this.recorderState = RecorderState.Recording;
