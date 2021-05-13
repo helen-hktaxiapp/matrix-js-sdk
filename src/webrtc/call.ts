@@ -31,7 +31,6 @@ import { randomString } from '../randomstring';
 import { MCallReplacesEvent, MCallAnswer, MCallOfferNegotiate, CallCapabilities } from './callEventTypes';
 // import { RecordRTC } from 'recordrtc';
 import RecordRTC, { invokeSaveAsDialog, MultiStreamRecorder } from "recordrtc";
-import FileSaver, { saveAs } from 'file-saver';
 // events: hangup, error(err), replaced(call), state(state, oldState)
 
 /**

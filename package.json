@@ -8,7 +8,7 @@
     "dist": "echo 'This is for the release script so it can make assets (browser bundle).' && yarn build",
     "clean": "rimraf lib dist",
     "build": "yarn build:dev && yarn build:compile-browser && yarn build:minify-browser",
-    "build:dev": "yarn clean && git rev-parse HEAD > git-revision.txt && yarn build:compile && yarn build:types",
+    "build:dev": "yarn clean && git rev-parse HEAD > git-revision.txt && yarn build:compile",
     "build:types": "tsc --emitDeclarationOnly",
     "build:compile": "babel -d lib --verbose --extensions \".ts,.js\" src",
     "build:compile-browser": "mkdirp dist && browserify -d src/browser-index.js -p [ tsify -p ./tsconfig.json ] -t [ babelify --sourceMaps=inline --presets [ @babel/preset-env @babel/preset-typescript ] ] | exorcist dist/browser-matrix.js.map > dist/browser-matrix.js",
@@ -28,7 +28,7 @@
   "keywords": [
     "matrix-org"
   ],
-  "main": "./src/index.ts",
+  "main": "./lib/index.js",
   "browser": "./lib/browser-index.js",
   "matrix_src_main": "./src/index.ts",
   "matrix_src_browser": "./src/browser-index.js",
